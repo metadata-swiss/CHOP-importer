@@ -205,6 +205,7 @@ class CHOPImporter:
         data["identifiers"] = ["DV_CHOP"]
         data["version"] = f"{self.year}.{self.revision}.0"
         data["themes"] = [{"code": I14Y_THEME_CODE}]
+        print(f"Theme code: {I14Y_THEME_CODE}")
         data["validFrom"] = f"{self.year-1}-12-31T23:00:00+00:00"
         data["validTo"] = f"{self.year}-12-30T23:00:00+00:00"
         data["codeListEntryDefaultSortProperty"] = "Position"
