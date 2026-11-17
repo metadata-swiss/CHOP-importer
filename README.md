@@ -20,7 +20,7 @@ The following env variables are needed:
 - `RESPONSIBLE_PERSON_GIVENNAME`: Given name for responsible person
 - `RESPONSIBLE_PERSON_FAMILYNAME`: Family name for responsible person
 - `RESPONSIBLE_PERSON_EMAIL`: Email for responsible person
-- `I14Y_THEME_CODE` (optional): theme code of the concept (default `114`, e.g. `HEAL` for the EU health theme)
+- `I14Y_THEME_CODE`: theme code of the concept (`114` for the I14Y health theme, `HEAL` for the EU health theme)
 - `I14Y_PUBLIC_API_BASE_URL` (optional): public i14y api used to read the existing `DV_CHOP` concepts (default `https://api.i14y.admin.ch/api`)
 
 The CHOP API provides the codeListEntries. The title and description of the concept are taken from the most recent existing `DV_CHOP` concept (highest version) returned by the public i14y API: the description is copied as-is, and in the title the year of that concept is replaced by the provided `CHOP_YEAR`.
@@ -31,7 +31,7 @@ The workflow `.github/workflows/import_chop.yml` can be started manually (*Actio
 
 Each target needs a GitHub Environment (*Settings > Environments*) named `ABN` / `PRD` with:
 - secrets: `CLIENT_ID`, `CLIENT_SECRET`, `RESPONSIBLE_DEPUTY_GIVENNAME`, `RESPONSIBLE_DEPUTY_FAMILYNAME`, `RESPONSIBLE_DEPUTY_EMAIL`, `RESPONSIBLE_PERSON_GIVENNAME`, `RESPONSIBLE_PERSON_FAMILYNAME`, `RESPONSIBLE_PERSON_EMAIL` (secrets so they are masked in the public workflow logs)
-- variables: `I14Y_API_BASE_URL`, `GET_TOKEN_URL`, and optionally `I14Y_THEME_CODE` (theme of the concept, defaults to `114`; currently `HEAL` on `ABN` only)
+- variables: `I14Y_API_BASE_URL`, `GET_TOKEN_URL`, `I14Y_THEME_CODE` (currently `HEAL` on `ABN` and `114` on `PRD`)
 
 The runner must be able to reach the MCT API (`CHOP_API_BASE_URL`).
 

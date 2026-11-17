@@ -8,8 +8,11 @@ CHOP_API_BASE_URL = "https://www.mct.bfs.admin.ch/api/Iop"
 I14Y_PUBLIC_API_BASE_URL = os.environ.get("I14Y_PUBLIC_API_BASE_URL", "https://api.i14y.admin.ch/api")
 # User-Agent sent with every API call, so these calls are not counted in the I14Y usage statistics
 I14Y_USER_AGENT = "I14Y CHOP Importer (contact: i14y@bfs.admin.ch)"
-# Theme of the concept (e.g. HEAL for the EU health theme), defaults to 114 (health)
-I14Y_THEME_CODE = os.environ.get("I14Y_THEME_CODE") or "114"
+# Theme of the concept (e.g. 114 for the I14Y health theme, HEAL for the EU health theme)
+# No default value on purpose: a missing variable must fail instead of creating a concept with the wrong theme
+I14Y_THEME_CODE = os.environ.get("I14Y_THEME_CODE", "").strip()
+if not I14Y_THEME_CODE:
+    raise Exception("The I14Y_THEME_CODE env variable is missing or empty (e.g. 114 or HEAL)")
 
 I14Y_API_BASE_URL = os.environ["I14Y_API_BASE_URL"]
 GET_TOKEN_URL = os.environ["GET_TOKEN_URL"]
