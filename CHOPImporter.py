@@ -4,7 +4,7 @@ import traceback
 import requests as r
 import urllib3
 import json
-import os
+import sys
 
 from config import (
     CHOP_API_BASE_URL,
@@ -14,13 +14,13 @@ from config import (
     CLIENT_SECRET,
     GET_TOKEN_URL,
     I14Y_API_BASE_URL,
+    I14Y_PUBLIC_API_BASE_URL,
     RESPONSIBLE_DEPUTY_EMAIL,
     RESPONSIBLE_DEPUTY_FAMILYNAME,
     RESPONSIBLE_DEPUTY_GIVENNAME,
     RESPONSIBLE_PERSON_EMAIL,
     RESPONSIBLE_PERSON_FAMILYNAME,
     RESPONSIBLE_PERSON_GIVENNAME,
-    TEMPLATES_DIR,
 )
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -160,59 +160,39 @@ class CHOPImporter:
 
         return data
 
-    def parse_templates(self):
+    def get_latest_existing_concept(self):
         """
-        Parse Markdown template files in the templates/ folder and return a dict:
-        {
-            'name': {'fr': ..., 'de': ..., 'en': ..., 'it': ...},
-            'description': {'fr': ..., 'de': ..., 'en': ..., 'it': ...}
-        }
-        Replaces {YEAR} with the provided year.
+        Fetch the existing DV_CHOP concepts from the public I14Y API
+        and return the most recent one (highest version).
+        Its name (with the year replaced) and description are reused for the new concept.
         """
-        result = {"name": {}, "description": {}}
+        response = r.get(
+            f"{I14Y_PUBLIC_API_BASE_URL}/concepts",
+            params={"conceptIdentifier": "DV_CHOP", "page": 1, "pageSize": 100},
+            verify=False,
+        )
+        response.raise_for_status()
+        concepts = response.json().get("data", [])
+        if not concepts:
+            raise Exception("No existing DV_CHOP concept found, cannot reuse its description")
 
-        # Mapping between language codes and filenames
-        lang_files = {"de": "de.md", "fr": "fr.md", "en": "en.md", "it": "it.md"}
+        def version_key(concept):
+            return tuple(int(part) for part in concept["version"].split("."))
 
-        for lang, filename in lang_files.items():
-            filepath = os.path.join(TEMPLATES_DIR, filename)
-            with open(filepath, "r", encoding="utf-8") as f:
-                content = f.read()
-                # Replace {YEAR} placeholder with the actual year
-                content = content.replace("{YEAR}", str(self.year))
-
-                # Extract # Title section
-                name = ""
-                description = ""
-                if "# Title" in content:
-                    parts = content.split("# Title", 1)[1]  # everything after # Title
-                    lines = parts.splitlines()
-                    name_lines = []
-                    for line in lines:
-                        if line.startswith("# Description"):
-                            break  # stop at Description section
-                        name_lines.append(line)
-                    name = " ".join(name_lines).strip()
-
-                # Extract # Description section
-                if "# Description" in content:
-                    parts = content.split("# Description", 1)[1]  # everything after # Description
-                    lines = parts.splitlines()
-                    description_lines = []
-                    for line in lines:
-                        if line.startswith("# "):
-                            break  # stop at next header
-                        description_lines.append(line)
-                    description = "\n".join(description_lines).strip()
-
-                # Store results under the correct language
-                result["name"][lang] = name
-                result["description"][lang] = description
-
-        return result
+        latest = max(concepts, key=version_key)
+        print(f"Reusing description from existing concept version {latest['version']} (id {latest['id']})")
+        return latest
 
     def build_data(self):
-        data = self.parse_templates()
+        latest_concept = self.get_latest_existing_concept()
+        latest_year = latest_concept["version"].split(".")[0]
+        data = {
+            "name": {
+                lang: name.replace(latest_year, str(self.year))
+                for lang, name in latest_concept["name"].items()
+            },
+            "description": latest_concept["description"],
+        }
         data["identifier"] = "DV_CHOP"
         data["version"] = f"{self.year}.{self.revision}.0"
         data["themes"] = [{"code": "114"}]
@@ -243,7 +223,9 @@ if __name__ == "__main__":
     importer = CHOPImporter(int(CHOP_YEAR), int(CHOP_REVISION), chunk_size=250)
     try:
         importer.publish_i14y(public=False)
-    except Exception as e:
+    except Exception:
         traceback.print_exc()
-        importer.debug_delete_concept(importer.concept_id)
+        if importer.concept_id:
+            importer.debug_delete_concept(importer.concept_id)
+        sys.exit(1)
     print(f"Concept id: {importer.concept_id}")

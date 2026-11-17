@@ -20,8 +20,18 @@ The following env variables are needed:
 - `RESPONSIBLE_PERSON_GIVENNAME`: Given name for responsible person
 - `RESPONSIBLE_PERSON_FAMILYNAME`: Family name for responsible person
 - `RESPONSIBLE_PERSON_EMAIL`: Email for responsible person
-- `TEMPLATES_DIR`: Folder containing description and title in different languages in `.md` files
+- `I14Y_PUBLIC_API_BASE_URL` (optional): public i14y api used to read the existing `DV_CHOP` concepts (default `https://api.i14y.admin.ch/api`)
 
-The CHOP API provides the codeListEntries. The title and description for the concept are defined in the `templates` folder for different languages as `.md` files. The placeholder `{YEAR}` in those file will be replaced by the provided `CHOP_YEAR` env variable.
+The CHOP API provides the codeListEntries. The title and description of the concept are taken from the most recent existing `DV_CHOP` concept (highest version) returned by the public i14y API: the description is copied as-is, and in the title the year of that concept is replaced by the provided `CHOP_YEAR`.
+
+## GitHub Actions
+
+The workflow `.github/workflows/import_chop.yml` can be started manually (*Actions > I14Y CHOP Importer > Run workflow*) with the inputs `environment` (`ABN` or `PROD`), `year` and `revision`.
+
+Each target needs a GitHub Environment (*Settings > Environments*) named `ABN` / `PROD` with:
+- secrets: `CLIENT_ID`, `CLIENT_SECRET`, `RESPONSIBLE_DEPUTY_GIVENNAME`, `RESPONSIBLE_DEPUTY_FAMILYNAME`, `RESPONSIBLE_DEPUTY_EMAIL`, `RESPONSIBLE_PERSON_GIVENNAME`, `RESPONSIBLE_PERSON_FAMILYNAME`, `RESPONSIBLE_PERSON_EMAIL` (secrets so they are masked in the public workflow logs)
+- variables: `I14Y_API_BASE_URL`, `GET_TOKEN_URL`
+
+The runner must be able to reach the MCT API (`CHOP_API_BASE_URL`).
 
 Parameters for the I14Y concept that are unlikely to change are defined in the `build_data` function in `CHOPImporter.py` file.

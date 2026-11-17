@@ -3,8 +3,9 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-TEMPLATES_DIR = "templates"  # folder containing de.md, en.md, fr.md, it.md
 CHOP_API_BASE_URL = "https://www.mct.bfs.admin.ch/api/Iop"
+# Public I14Y API used to read the existing DV_CHOP concepts (name and description are taken from the most recent one)
+I14Y_PUBLIC_API_BASE_URL = os.environ.get("I14Y_PUBLIC_API_BASE_URL", "https://api.i14y.admin.ch/api")
 
 I14Y_API_BASE_URL = os.environ["I14Y_API_BASE_URL"]
 GET_TOKEN_URL = os.environ["GET_TOKEN_URL"]

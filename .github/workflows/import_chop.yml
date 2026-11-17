@@ -1,0 +1,57 @@
+name: I14Y CHOP Importer
+permissions:
+  contents: read
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Target I14Y environment (GitHub Environment holding the secrets/vars)"
+        type: choice
+        options:
+          - ABN
+          - PROD
+        default: ABN
+        required: true
+      year:
+        description: "CHOP year (e.g. 2027)"
+        type: string
+        required: true
+      revision:
+        description: "CHOP revision"
+        type: string
+        default: "99"
+        required: true
+
+jobs:
+  import-chop:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run CHOP Importer script
+        env:
+          CHOP_YEAR: ${{ inputs.year }}
+          CHOP_REVISION: ${{ inputs.revision }}
+          CLIENT_ID: ${{ secrets.CLIENT_ID }}
+          CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
+          I14Y_API_BASE_URL: ${{ vars.I14Y_API_BASE_URL }}
+          GET_TOKEN_URL: ${{ vars.GET_TOKEN_URL }}
+          RESPONSIBLE_DEPUTY_GIVENNAME: ${{ secrets.RESPONSIBLE_DEPUTY_GIVENNAME }}
+          RESPONSIBLE_DEPUTY_FAMILYNAME: ${{ secrets.RESPONSIBLE_DEPUTY_FAMILYNAME }}
+          RESPONSIBLE_DEPUTY_EMAIL: ${{ secrets.RESPONSIBLE_DEPUTY_EMAIL }}
+          RESPONSIBLE_PERSON_GIVENNAME: ${{ secrets.RESPONSIBLE_PERSON_GIVENNAME }}
+          RESPONSIBLE_PERSON_FAMILYNAME: ${{ secrets.RESPONSIBLE_PERSON_FAMILYNAME }}
+          RESPONSIBLE_PERSON_EMAIL: ${{ secrets.RESPONSIBLE_PERSON_EMAIL }}
+        run: python CHOPImporter.py
