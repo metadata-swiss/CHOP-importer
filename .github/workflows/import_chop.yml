@@ -10,7 +10,7 @@ on:
         type: choice
         options:
           - ABN
-          - PROD
+          - PRD
         default: ABN
         required: true
       year:

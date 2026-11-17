@@ -7,8 +7,8 @@ The required pip modules are listed in the `requirements.txt` file.
 You have to create a `.env` file with the same variables as in `.env.example`.
 
 The following env variables are needed:
-- `I14Y_API_BASE_URL`: i14y api url (different for ABN/DEV/PROD)
-- `GET_TOKEN_URL`: url to generate i14y token (different for ABN/DEV/PROD)
+- `I14Y_API_BASE_URL`: i14y api url (different for ABN/DEV/PRD)
+- `GET_TOKEN_URL`: url to generate i14y token (different for ABN/DEV/PRD)
 - `CLIENT_ID`: client id to generate i14y token
 - `CLIENT_SECRET`: client secret to generate i14y token
 - `CHOP_API_BASE_URL`: MCT API url
@@ -26,9 +26,9 @@ The CHOP API provides the codeListEntries. The title and description of the conc
 
 ## GitHub Actions
 
-The workflow `.github/workflows/import_chop.yml` can be started manually (*Actions > I14Y CHOP Importer > Run workflow*) with the inputs `environment` (`ABN` or `PROD`), `year` and `revision`.
+The workflow `.github/workflows/import_chop.yml` can be started manually (*Actions > I14Y CHOP Importer > Run workflow*) with the inputs `environment` (`ABN` or `PRD`), `year` and `revision`.
 
-Each target needs a GitHub Environment (*Settings > Environments*) named `ABN` / `PROD` with:
+Each target needs a GitHub Environment (*Settings > Environments*) named `ABN` / `PRD` with:
 - secrets: `CLIENT_ID`, `CLIENT_SECRET`, `RESPONSIBLE_DEPUTY_GIVENNAME`, `RESPONSIBLE_DEPUTY_FAMILYNAME`, `RESPONSIBLE_DEPUTY_EMAIL`, `RESPONSIBLE_PERSON_GIVENNAME`, `RESPONSIBLE_PERSON_FAMILYNAME`, `RESPONSIBLE_PERSON_EMAIL` (secrets so they are masked in the public workflow logs)
 - variables: `I14Y_API_BASE_URL`, `GET_TOKEN_URL`
 
