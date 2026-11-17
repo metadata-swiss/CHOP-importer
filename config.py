@@ -6,6 +6,8 @@ load_dotenv()
 CHOP_API_BASE_URL = "https://www.mct.bfs.admin.ch/api/Iop"
 # Public I14Y API used to read the existing DV_CHOP concepts (name and description are taken from the most recent one)
 I14Y_PUBLIC_API_BASE_URL = os.environ.get("I14Y_PUBLIC_API_BASE_URL", "https://api.i14y.admin.ch/api")
+# User-Agent sent with every API call, so these calls are not counted in the I14Y usage statistics
+I14Y_USER_AGENT = "I14Y CHOP Importer (contact: i14y@bfs.admin.ch)"
 
 I14Y_API_BASE_URL = os.environ["I14Y_API_BASE_URL"]
 GET_TOKEN_URL = os.environ["GET_TOKEN_URL"]

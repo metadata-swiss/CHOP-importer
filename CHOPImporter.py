@@ -14,6 +14,7 @@ from config import (
     GET_TOKEN_URL,
     I14Y_API_BASE_URL,
     I14Y_PUBLIC_API_BASE_URL,
+    I14Y_USER_AGENT,
     RESPONSIBLE_DEPUTY_EMAIL,
     RESPONSIBLE_DEPUTY_FAMILYNAME,
     RESPONSIBLE_DEPUTY_GIVENNAME,
@@ -23,6 +24,10 @@ from config import (
 )
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
+# Session used for all API calls, so that every call sends our User-Agent
+session = r.Session()
+session.headers["User-Agent"] = I14Y_USER_AGENT
 
 
 class CHOPImporter:
@@ -37,7 +42,7 @@ class CHOPImporter:
     def get_access_token(self):
         """Generated an access token from client key and client secret"""
         data = {"grant_type": "client_credentials"}
-        response = r.post(
+        response = session.post(
             GET_TOKEN_URL,
             data=data,
             verify=False,
@@ -66,7 +71,7 @@ class CHOPImporter:
 
             # The /imports endpoint only accepts a concept without entries, so we use the endpoint
             # that adds entries to an existing concept to upload the chunks one after the other
-            response = r.post(
+            response = session.post(
                 f"{I14Y_API_BASE_URL}/concepts/{concept_id}/codelist-entries",
                 headers=headers,
                 data=json.dumps({"data": chunk}, ensure_ascii=False).encode("utf-8"),
@@ -85,7 +90,7 @@ class CHOPImporter:
 
         chop_data = self.build_data()
         headers = {"Authorization": self.token, "Content-Type": "application/json"}
-        response = r.post(
+        response = session.post(
             I14Y_API_BASE_URL + "/concepts",
             json={"data": chop_data},
             headers=headers,
@@ -112,7 +117,7 @@ class CHOPImporter:
         return concept_id
 
     def change_publication_level(self, concept_id, publication_level):
-        response = r.put(
+        response = session.put(
             url=f"{I14Y_API_BASE_URL}/concepts/{concept_id}/publication-level",
             params={"level": publication_level},
             headers={
@@ -136,7 +141,7 @@ class CHOPImporter:
         except Exception as e:
             # If concept is already internal we have an exception so we try to delete anyway
             pass
-        response = r.delete(I14Y_API_BASE_URL + "/concepts/" + concept_id, headers=headers, verify=False)
+        response = session.delete(I14Y_API_BASE_URL + "/concepts/" + concept_id, headers=headers, verify=False)
         response.raise_for_status()
         print(f"Deleted concept with id {concept_id}")
 
@@ -148,7 +153,7 @@ class CHOPImporter:
             }
         """
         url = f"{CHOP_API_BASE_URL}/chop/{self.year}/{self.revision}"
-        response = r.get(url, verify=False)
+        response = session.get(url, verify=False)
         response.raise_for_status()
 
         data = response.json()
@@ -169,7 +174,7 @@ class CHOPImporter:
         and return the most recent one (highest version).
         Its name (with the year replaced) and description are reused for the new concept.
         """
-        response = r.get(
+        response = session.get(
             f"{I14Y_PUBLIC_API_BASE_URL}/concepts",
             params={"conceptIdentifier": "DV_CHOP", "page": 1, "pageSize": 100},
             verify=False,
