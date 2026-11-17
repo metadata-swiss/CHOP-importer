@@ -14,6 +14,7 @@ from config import (
     GET_TOKEN_URL,
     I14Y_API_BASE_URL,
     I14Y_PUBLIC_API_BASE_URL,
+    I14Y_THEME_CODE,
     I14Y_USER_AGENT,
     RESPONSIBLE_DEPUTY_EMAIL,
     RESPONSIBLE_DEPUTY_FAMILYNAME,
@@ -203,7 +204,7 @@ class CHOPImporter:
         }
         data["identifiers"] = ["DV_CHOP"]
         data["version"] = f"{self.year}.{self.revision}.0"
-        data["themes"] = [{"code": "114"}]
+        data["themes"] = [{"code": I14Y_THEME_CODE}]
         data["validFrom"] = f"{self.year-1}-12-31T23:00:00+00:00"
         data["validTo"] = f"{self.year}-12-30T23:00:00+00:00"
         data["codeListEntryDefaultSortProperty"] = "Position"
