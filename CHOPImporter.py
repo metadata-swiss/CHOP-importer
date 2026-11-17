@@ -83,8 +83,7 @@ class CHOPImporter:
             except r.exceptions.HTTPError as e:
                 print(f"\tChunk {i+1} failed: {e}")
                 print(f"\tResponse: {response.text}")
-                traceback.print_exc()
-                importer.debug_delete_concept(concept_id)
+                raise
 
     def publish_i14y(self, public=False):
 
@@ -157,6 +156,14 @@ class CHOPImporter:
         response.raise_for_status()
 
         data = response.json()
+
+        # I14Y rejects annotations whose "text" has no language filled (e.g. CodeWithoutPunctuation,
+        # CODABLE, LATERAL come with "text": {}), so we drop empty texts
+        for entry in data["codeListEntries"]:
+            for annotation in entry.get("annotations") or []:
+                text = annotation.get("text")
+                if text is not None and not any((value or "").strip() for value in text.values()):
+                    del annotation["text"]
 
         return data
 
