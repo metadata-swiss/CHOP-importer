@@ -201,7 +201,7 @@ class CHOPImporter:
             },
             "description": latest_concept["description"],
         }
-        data["identifier"] = "DV_CHOP"
+        data["identifiers"] = ["DV_CHOP"]
         data["version"] = f"{self.year}.{self.revision}.0"
         data["themes"] = [{"code": "114"}]
         data["validFrom"] = f"{self.year-1}-12-31T23:00:00+00:00"
