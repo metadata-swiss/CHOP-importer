@@ -1,4 +1,3 @@
-from io import BytesIO
 from math import ceil
 import traceback
 import requests as r
@@ -56,24 +55,21 @@ class CHOPImporter:
 
         num_chunks = ceil(total / self.chunk_size)
 
-        headers = {"Authorization": self.token}
+        headers = {"Authorization": self.token, "Content-Type": "application/json"}
 
         for i in range(num_chunks):
             start = i * self.chunk_size
             end = start + self.chunk_size
             chunk = all_codelists[start:end]
 
-            payload = {"data": chunk}
-            file_content = json.dumps(payload, ensure_ascii=False).encode("utf-8")
-
-            files = {"file": ("import.json", BytesIO(file_content), "application/json")}
-
             print(f"Uploading chunk {i+1}/{num_chunks} ({len(chunk)} entries)...")
 
+            # The /imports endpoint only accepts a concept without entries, so we use the endpoint
+            # that adds entries to an existing concept to upload the chunks one after the other
             response = r.post(
-                f"{I14Y_API_BASE_URL}/concepts/{concept_id}/codelist-entries/imports/Json",
+                f"{I14Y_API_BASE_URL}/concepts/{concept_id}/codelist-entries",
                 headers=headers,
-                files=files,
+                data=json.dumps({"data": chunk}, ensure_ascii=False).encode("utf-8"),
                 verify=False,
             )
 
